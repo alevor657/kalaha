@@ -16,6 +16,7 @@ public class Node {
     
     public int utility;
     public int depth;
+    public String mode;
     
     public Node() {
         this.children = new ArrayList<Node>();

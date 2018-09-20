@@ -212,8 +212,8 @@ public class AIClient implements Runnable
      */
     public int getMove(GameState currentBoard)
     {
-        int myMove = getRandom();
-        return myMove;
+        GameState board = currentBoard.clone();
+        
     }
     
     /**
@@ -227,7 +227,3 @@ public class AIClient implements Runnable
         return 1 + (int)(Math.random() * 6);
     }
 }
-
-class Node
-    id
-    refId

@@ -24,6 +24,8 @@ public class AIClient implements Runnable
     private Socket socket;
     private boolean running;
     private boolean connected;
+    
+    private Tree tree; 
     	
     /**
      * Creates a new client.
@@ -210,33 +212,75 @@ public class AIClient implements Runnable
      * @param currentBoard The current board state
      * @return Move to make (1-6)
      */
-    public void calculateScores(GameState board, int depth, Node parentNode = null){        
-        for(int i = 1; i <= 6; i++){        
-            board.makeMove(i);
-            Node currentNode = new Node();
-            currentNode.id = "" + depth + i;
-            currentNode.utility = board.getScore(this.player);
-            currentNode.depth = depth;
+    
+//    public void calculateScores(GameState board, int depth, String parentId){        
+//        for(int i = 1; i <= 6; i++){        
+//            board.makeMove(i);
+//            Node currentNode = new Node();
+//            currentNode.id = "" + depth + i;
+//            currentNode.utility = board.getScore(this.player);
+//            currentNode.depth = depth;
+//            
+//            if (depth == 0) {
+//                currentNode.head = null;
+//            } else {
+//                currentNode.head = tree.getNodeById(parentId);
+//            }
+//            
+//            tree.save(currentNode);
+//        }
+//    }
+//    
+    public void constructTree(Node root, GameState board, int depth){
+        
+        while(depth<4){
             
-            
-            if (depth == 0) {
-                currentNode.head = null;
-            } else {
-                
+            if(depth == 0){
+                depth++;
+                for(int k=1; k<=6; k++){
+                    
+                    Node newNode = new Node();
+                    root.children.add(newNode);
+                    constructTree(newNode, board, depth);
+                }   
+            }else{
+                depth++;
+                for(int i=1;i<=6;i++){
+//                    root.utility = board.getScore(this.player);
+                    board.makeMove(i);
+                    
+                    Node newNode = new Node();
+                    root.children.add(newNode);
+                    constructTree(newNode, board, depth);
+                }
             }
+            
+            
         }
+        
     }
     
     public int getMove(GameState currentBoard)
     {
-        int depth = 0;
         
-        while (depth <= 4) {
-            calculateScores(currentBoard.clone(), depth);
-            depth ++;
-        }
-       
-        return 1;
+//        for (int j=1;j<=6;j++){
+//            int depth = 0;
+//            GameState newBoard = currentBoard.clone();
+//            
+//            while (depth < 4) {
+//                calculateScores(newBoard, depth, ""+depth+j);
+//                depth ++;
+//            }
+//        }
+//        
+//       
+//        return 1;
+        this.tree= new Tree();
+        Node root = new Node();
+        tree.root = root;
+        
+        GameState newBoard = currentBoard.clone();
+        constructTree(tree.root, newBoard, 0);
     }
     
     /**

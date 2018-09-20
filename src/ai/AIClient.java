@@ -236,22 +236,28 @@ public class AIClient implements Runnable
         while(depth<4){
             
             if(depth == 0){
-                depth++;
+//                depth++;
+                GameState newBoard = board.clone();
                 for(int k=1; k<=6; k++){
+                    newBoard.makeMove(k);
                     
                     Node newNode = new Node();
+                    newNode.utility = newBoard.getScore(this.player);
+                    
                     root.children.add(newNode);
-                    constructTree(newNode, board, depth);
+                    constructTree(newNode, newBoard, ++depth);
                 }   
             }else{
-                depth++;
+//                depth++;
+                GameState newBoard = board.clone();
                 for(int i=1;i<=6;i++){
-//                    root.utility = board.getScore(this.player);
-                    board.makeMove(i);
+                    
+                    newBoard.makeMove(i);
                     
                     Node newNode = new Node();
+                    newNode.utility = newBoard.getScore(this.player);
                     root.children.add(newNode);
-                    constructTree(newNode, board, depth);
+                    constructTree(newNode, newBoard, ++depth);
                 }
             }
             
@@ -281,6 +287,8 @@ public class AIClient implements Runnable
         
         GameState newBoard = currentBoard.clone();
         constructTree(tree.root, newBoard, 0);
+        
+        return 1;
     }
     
     /**

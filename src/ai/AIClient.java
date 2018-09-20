@@ -210,9 +210,35 @@ public class AIClient implements Runnable
      * @param currentBoard The current board state
      * @return Move to make (1-6)
      */
+    public void calculateScores(){
+        int threshold_level = 4;
+        
+        
+    }
+    
     public int getMove(GameState currentBoard)
     {
-        GameState board = currentBoard.clone();
+        int start = 1;
+        if(this.player == 1){
+            start = 1;
+        }else{
+            start = 8;
+        }
+        for(int i=start;i< start+5; i++){
+            GameState board = currentBoard.clone();
+        
+            board.makeMove(i);
+            Node currentNode = new Node();
+            currentNode.utility = board.getScore(this.player);
+            System.out.println(currentNode.utility);
+        }
+        
+//        int level = 0;
+//        calculateScores();
+        
+        
+        return 1;
+        
         
     }
     

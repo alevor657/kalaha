@@ -12,8 +12,7 @@ import java.util.ArrayList;
  * @author user
  */
 public class Node {
-    public String id;
-    public Node head;
+    public ArrayList<Node> children;
     
     public int utility;
     public int depth;

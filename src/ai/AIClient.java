@@ -244,6 +244,7 @@ public class AIClient implements Runnable
     {
         this.tree= new Tree();
         Node root = new Node();
+        root.mode = "max";
         tree.root = root;
         
         GameState newBoard = currentBoard.clone();

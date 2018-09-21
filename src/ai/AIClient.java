@@ -238,6 +238,9 @@ public class AIClient implements Runnable
 
         for (int k=1; k<=6; k++){
             // if (newBoard.getSeeds(k, this.player) == 0) continue;
+            if (!newBoard.moveIsPossible(k)) {
+                continue;
+            };
             newBoard.makeMove(k);
 
             Node newNode = new Node();

@@ -233,10 +233,10 @@ public class AIClient implements Runnable
 //    
     public void constructTree(Node root, GameState board, int depth){
         
-        GameState newBoard = board.clone();
         boolean isOurTurn = this.player != board.getNextPlayer();
 
         for (int k=1; k<=6; k++){
+            GameState newBoard = board.clone();
             // if (newBoard.getSeeds(k, this.player) == 0) continue;
             if (!newBoard.moveIsPossible(k)) {
                 continue;

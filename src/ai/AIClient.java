@@ -204,36 +204,9 @@ public class AIClient implements Runnable
         }
     }
     
-    /**
-     * This is the method that makes a move each time it is your turn.
-     * Here you need to change the call to the random method to your
-     * Minimax search.
-     * 
-     * @param currentBoard The current board state
-     * @return Move to make (1-6)
-     */
-    
-//    public void calculateScores(GameState board, int depth, String parentId){        
-//        for(int i = 1; i <= 6; i++){        
-//            board.makeMove(i);
-//            Node currentNode = new Node();
-//            currentNode.id = "" + depth + i;
-//            currentNode.utility = board.getScore(this.player);
-//            currentNode.depth = depth;
-//            
-//            if (depth == 0) {
-//                currentNode.head = null;
-//            } else {
-//                currentNode.head = tree.getNodeById(parentId);
-//            }
-//            
-//            tree.save(currentNode);
-//        }
-//    }
-//    
     public void constructTree(Node root, GameState board, int depth){
         
-        boolean isOurTurn = this.player != board.getNextPlayer();
+        boolean isOurTurn = this.player == board.getNextPlayer();
 
         for (int k=1; k<=6; k++){
             GameState newBoard = board.clone();
@@ -245,8 +218,12 @@ public class AIClient implements Runnable
 
             Node newNode = new Node();
             newNode.mode = isOurTurn ? "max" : "min";
-            newNode.utility = newBoard.getScore(this.player);
 
+            if (depth == 4) {
+                int opponent = this.player == 1 ? 2 : 1;
+                newNode.utility = newBoard.getScore(this.player) - newBoard.getScore(opponent);
+            }
+            
             root.children.add(newNode);
             
             if (depth < 4) {
@@ -255,6 +232,14 @@ public class AIClient implements Runnable
         }
     }
     
+    /**
+     * This is the method that makes a move each time it is your turn.
+     * Here you need to change the call to the random method to your
+     * Minimax search.
+     * 
+     * @param currentBoard The current board state
+     * @return Move to make (1-6)
+     */
     public int getMove(GameState currentBoard)
     {
         this.tree= new Tree();
@@ -263,8 +248,15 @@ public class AIClient implements Runnable
         
         GameState newBoard = currentBoard.clone();
         constructTree(tree.root, newBoard, 0);
+        calculateUtility();
         
         return 1;
+    }
+    
+    
+    public void calcualteUtility()
+    {
+        for (int i = 0; i < depth, i)
     }
     
     /**

@@ -14,11 +14,12 @@ import java.util.ArrayList;
 public class Node {
     public ArrayList<Node> children;
     
-    public int utility;
+    public Integer utility;
     public int depth;
     public String mode;
     
     public Node() {
         this.children = new ArrayList<Node>();
+        this.utility = null;
     }
 }

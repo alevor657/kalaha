@@ -5,6 +5,8 @@ import java.io.*;
 import java.net.*;
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
 import kalaha.*;
 
@@ -248,9 +250,8 @@ public class AIClient implements Runnable
             }
             
         }else{
-            util=root.utility;
+            return root.utility;
         }
-//        System.out.println(util);
         return util;
     }
     
@@ -272,8 +273,21 @@ public class AIClient implements Runnable
         GameState newBoard = currentBoard.clone();
         constructTree(tree.root, newBoard, 0);
         root.utility = calculateUtility(tree.root);
+//        int theMove = this.getBestMove();
         System.out.println(root.utility);
         return 1;
+    }
+    
+    
+    public int getBestMove()
+    {
+        ArrayList<Integer> topNodeUtilities = new ArrayList<Integer>();
+        
+        for (Node node : this.tree.root.children) {
+            topNodeUtilities.add(node.utility);
+        }
+        
+        return Collections.max(topNodeUtilities);
     }
     
     /**

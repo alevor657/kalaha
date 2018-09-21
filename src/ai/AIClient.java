@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.*;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Stack;
 import kalaha.*;
 
 /**
@@ -232,6 +233,32 @@ public class AIClient implements Runnable
         }
     }
     
+    public int calculateUtility(Node root)
+    {
+//        Node root = this.tree.root;
+//        if(root == null){
+//            return false;
+//        }
+//        
+//        Stack<Node> stack = new Stack<Node>();
+//         
+//        stack.push(root.children);
+//        while(!stack.isEmpty()){
+//            stack.push(root.children)
+//        }
+        int util;
+        if(!root.children.isEmpty()){
+            for(Node node : root.children){
+                root.utility = calculateUtility(node);
+            }
+        }else{
+            util = root.utility;
+            return util;
+        }
+        
+        return 0;
+    }
+    
     /**
      * This is the method that makes a move each time it is your turn.
      * Here you need to change the call to the random method to your
@@ -252,12 +279,6 @@ public class AIClient implements Runnable
         calculateUtility();
         
         return 1;
-    }
-    
-    
-    public void calcualteUtility()
-    {
-        for (int i = 0; i < depth, i)
     }
     
     /**

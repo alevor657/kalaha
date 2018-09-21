@@ -235,28 +235,23 @@ public class AIClient implements Runnable
     
     public int calculateUtility(Node root)
     {
-//        Node root = this.tree.root;
-//        if(root == null){
-//            return false;
-//        }
-//        
-//        Stack<Node> stack = new Stack<Node>();
-//         
-//        stack.push(root.children);
-//        while(!stack.isEmpty()){
-//            stack.push(root.children)
-//        }
-        int util;
+
+        int util=0;
+        int temp=0;
         if(!root.children.isEmpty()){
+            
             for(Node node : root.children){
-                root.utility = calculateUtility(node);
+                 temp = calculateUtility(node);
+                if(util<temp){
+                    util=temp;
+                }
             }
+            
         }else{
-            util = root.utility;
-            return util;
+            util=root.utility;
         }
-        
-        return 0;
+//        System.out.println(util);
+        return util;
     }
     
     /**
@@ -276,8 +271,8 @@ public class AIClient implements Runnable
         
         GameState newBoard = currentBoard.clone();
         constructTree(tree.root, newBoard, 0);
-        calculateUtility();
-        
+        root.utility = calculateUtility(tree.root);
+        System.out.println(root.utility);
         return 1;
     }
     

@@ -231,7 +231,7 @@ public class AIClient implements Runnable
             root.children.add(newNode);
             
             if (depth < 4) {
-                constructTree(newNode, newBoard, depth + 1);
+                constructTree(newNode, newBoard.clone(), depth + 1);
             }
         }
     }
@@ -249,10 +249,12 @@ public class AIClient implements Runnable
                 for (Node node : root.children) {
                     utils.add(node.utility);
                 }
-                
-                int max = (int)Collections.max(utils);
-                root.utility = max;
-                // Add min and max mode checks
+                                
+                if (root.mode == "max") {
+                    root.utility = (int)Collections.max(utils);
+                } else if (root.mode == "min") {
+                    root.utility = (int)Collections.min(utils);
+                }
             }
         }
     }
@@ -286,21 +288,28 @@ public class AIClient implements Runnable
         GameState newBoard = currentBoard.clone();
         constructTree(tree.root, newBoard, 0);
         calculateUtility(tree.root);
-//        int theMove = this.getBestMove();
-        System.out.println(root.utility);
-        return 1;
+        int theMove = this.getBestMove(currentBoard.clone());
+        System.out.println("Utility is: " + root.utility);
+        System.out.println("Making move " + theMove);
+        return theMove;
     }
     
     
-    public int getBestMove()
+    public int getBestMove(GameState board)
     {
-        ArrayList<Integer> topNodeUtilities = new ArrayList<Integer>();
+        ArrayList<Integer> utilities = new ArrayList<>();
+        int count = 0;
         
         for (Node node : this.tree.root.children) {
-            topNodeUtilities.add(node.utility);
+            if (board.moveIsPossible(count)) {
+                utilities.add(node.utility);
+            }
+            count ++;
         }
         
-        return Collections.max(topNodeUtilities);
+        int bestUtility = Collections.max(utilities);
+        
+        return utilities.indexOf(bestUtility) + 1;
     }
     
     /**

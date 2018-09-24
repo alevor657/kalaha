@@ -207,13 +207,21 @@ public class AIClient implements Runnable
         }
     }
     
+    /**
+     * Construct a tree for the game by using provided Node class.
+     * Game tree is built by playing the game.
+     * Adds utility values to the leaf nodes based on the difference between scores.
+     * 
+     * @param Node root node for the tree
+     * @param GameState state of the game
+     * @param int current depth level
+     */
     public void constructTree(Node root, GameState board, int depth){
         
         boolean isOurTurn = this.player == board.getNextPlayer();
 
         for (int k=1; k<=6; k++){
             GameState newBoard = board.clone();
-            // if (newBoard.getSeeds(k, this.player) == 0) continue;
             if (!newBoard.moveIsPossible(k)) {
                 continue;
             };
@@ -222,27 +230,33 @@ public class AIClient implements Runnable
             Node newNode = new Node();
             newNode.mode = isOurTurn ? "max" : "min";
 
-            if (depth == 10) {
+            if (depth == 6) {
                 int opponent = this.player == 1 ? 2 : 1;
                 newNode.utility = newBoard.getScore(this.player) - newBoard.getScore(opponent);
-                newNode.isLeaf = true;
             }
             
             root.children.add(newNode);
             
-            if (depth < 10) {
+            if (depth < 6) {
                 constructTree(newNode, newBoard.clone(), depth + 1);
             }
         }
     }
     
+    /**
+     * Propagates utility values up to the top nodes.
+     * 
+     * @param Node root node.
+     */
     public void calculateUtility(Node root)
     {
         if (!root.children.isEmpty()) {
+            // Go down the tree
             for (Node node : root.children) {
                 calculateUtility(node);
             }
             
+            // Find the penultimate layer (second last)
             if (this.allContainUtility(root.children)) {
                 ArrayList utils = new ArrayList();
                 
@@ -260,6 +274,9 @@ public class AIClient implements Runnable
         }
     }
     
+    /**
+     * Checks that all nodes are leafs
+     */
     public boolean allContainUtility(ArrayList<Node> nodes) {
         boolean res = true;
         for (Node node : nodes) {
@@ -270,6 +287,34 @@ public class AIClient implements Runnable
         
         return res;
     }
+    
+    /**
+     * Returns the best possible move.
+     * 
+     * @param board current board
+     * @return int ambo id 1-6
+     */
+    public int getBestMove(GameState board)
+    {
+        ArrayList<Integer> utilities = new ArrayList<>();
+        
+        int count = 0;
+        
+        for(int i=1;i<=6;i++){
+            // if this ambo is empty
+            if(board.getSeeds(i, this.player) == 0){
+                utilities.add(Integer.MIN_VALUE);
+            } else {
+                utilities.add(this.tree.root.children.get(count).utility + 1);
+                count++;
+            }
+        }
+        
+        int max = Collections.max(utilities);
+        
+        return utilities.indexOf(max) + 1;
+    }
+    
     
     /**
      * This is the method that makes a move each time it is your turn.
@@ -290,44 +335,8 @@ public class AIClient implements Runnable
         constructTree(tree.root, newBoard, 0);
         calculateUtility(tree.root);
         int theMove = this.getBestMove(currentBoard);
-        System.out.println("Utility is: " + root.utility);
         System.out.println("Making move " + theMove);
         
         return theMove;
-    }
-    
-    
-    public int getBestMove(GameState board)
-    {
-        ArrayList<Integer> utilities = new ArrayList<>();
-        int count = 0;
-        for(int i=1;i<=6;i++){
-            if(board.getSeeds(i, this.player) == 0){
-                utilities.add(Integer.MIN_VALUE);
-            }else{
-                
-                utilities.add(this.tree.root.children.get(count).utility+1);
-                count++;
-            }
-        }
-        
-        int max = Collections.max(utilities);
-        System.out.println(utilities);
-        for(Node node: this.tree.root.children){
-            System.out.println(node.utility);
-        }
-        
-        return utilities.indexOf(max) + 1;
-    }
-    
-    /**
-     * Returns a random ambo number (1-6) used when making
-     * a random move.
-     * 
-     * @return Random ambo number
-     */
-    public int getRandom()
-    {
-        return 1 + (int)(Math.random() * 6);
     }
 }

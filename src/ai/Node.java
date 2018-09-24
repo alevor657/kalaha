@@ -9,13 +9,14 @@ import java.util.ArrayList;
 
 /**
  *
- * @author user
+ * @author Alexey and Uttejh
+ * 
+ * This is a node to be used in the tree
  */
 public class Node {
     public ArrayList<Node> children;
     
     public int utility;
-    public boolean isLeaf;
 
     public int depth;
     public String mode;
@@ -23,6 +24,5 @@ public class Node {
     public Node() {
         this.children = new ArrayList<Node>();
         this.utility = Integer.MIN_VALUE;
-        this.isLeaf = false;
     }
 }

@@ -225,6 +225,7 @@ public class AIClient implements Runnable
             if (depth == 4) {
                 int opponent = this.player == 1 ? 2 : 1;
                 newNode.utility = newBoard.getScore(this.player) - newBoard.getScore(opponent);
+                newNode.isLeaf = true;
             }
             
             root.children.add(newNode);
@@ -235,24 +236,36 @@ public class AIClient implements Runnable
         }
     }
     
-    public int calculateUtility(Node root)
+    public void calculateUtility(Node root)
     {
-
-        int util=0;
-        int temp=0;
-        if(!root.children.isEmpty()){
-            
-            for(Node node : root.children){
-                 temp = calculateUtility(node);
-                if(util<temp){
-                    util=temp;
-                }
+        if (!root.children.isEmpty()) {
+            for (Node node : root.children) {
+                calculateUtility(node);
             }
             
-        }else{
-            return root.utility;
+            if (this.allContainUtility(root.children)) {
+                ArrayList utils = new ArrayList();
+                
+                for (Node node : root.children) {
+                    utils.add(node.utility);
+                }
+                
+                int max = (int)Collections.max(utils);
+                root.utility = max;
+                // Add min and max mode checks
+            }
         }
-        return util;
+    }
+    
+    public boolean allContainUtility(ArrayList<Node> nodes) {
+        boolean res = true;
+        for (Node node : nodes) {
+            if (node.utility == Integer.MIN_VALUE) {
+                res = false;
+            }
+        }
+        
+        return res;
     }
     
     /**
@@ -272,7 +285,7 @@ public class AIClient implements Runnable
         
         GameState newBoard = currentBoard.clone();
         constructTree(tree.root, newBoard, 0);
-        root.utility = calculateUtility(tree.root);
+        calculateUtility(tree.root);
 //        int theMove = this.getBestMove();
         System.out.println(root.utility);
         return 1;

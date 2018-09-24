@@ -14,12 +14,15 @@ import java.util.ArrayList;
 public class Node {
     public ArrayList<Node> children;
     
-    public Integer utility;
+    public int utility;
+    public boolean isLeaf;
+
     public int depth;
     public String mode;
     
     public Node() {
         this.children = new ArrayList<Node>();
-        this.utility = null;
+        this.utility = Integer.MIN_VALUE;
+        this.isLeaf = false;
     }
 }

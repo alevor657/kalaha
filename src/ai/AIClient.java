@@ -222,7 +222,7 @@ public class AIClient implements Runnable
             Node newNode = new Node();
             newNode.mode = isOurTurn ? "max" : "min";
 
-            if (depth == 4) {
+            if (depth == 10) {
                 int opponent = this.player == 1 ? 2 : 1;
                 newNode.utility = newBoard.getScore(this.player) - newBoard.getScore(opponent);
                 newNode.isLeaf = true;
@@ -230,7 +230,7 @@ public class AIClient implements Runnable
             
             root.children.add(newNode);
             
-            if (depth < 4) {
+            if (depth < 10) {
                 constructTree(newNode, newBoard.clone(), depth + 1);
             }
         }
@@ -249,6 +249,7 @@ public class AIClient implements Runnable
                 for (Node node : root.children) {
                     utils.add(node.utility);
                 }
+                
                                 
                 if (root.mode == "max") {
                     root.utility = (int)Collections.max(utils);
@@ -288,9 +289,10 @@ public class AIClient implements Runnable
         GameState newBoard = currentBoard.clone();
         constructTree(tree.root, newBoard, 0);
         calculateUtility(tree.root);
-        int theMove = this.getBestMove(currentBoard.clone());
+        int theMove = this.getBestMove(currentBoard);
         System.out.println("Utility is: " + root.utility);
         System.out.println("Making move " + theMove);
+        
         return theMove;
     }
     
@@ -299,17 +301,23 @@ public class AIClient implements Runnable
     {
         ArrayList<Integer> utilities = new ArrayList<>();
         int count = 0;
-        
-        for (Node node : this.tree.root.children) {
-            if (board.moveIsPossible(count)) {
-                utilities.add(node.utility);
+        for(int i=1;i<=6;i++){
+            if(board.getSeeds(i, this.player) == 0){
+                utilities.add(Integer.MIN_VALUE);
+            }else{
+                
+                utilities.add(this.tree.root.children.get(count).utility+1);
+                count++;
             }
-            count ++;
         }
         
-        int bestUtility = Collections.max(utilities);
+        int max = Collections.max(utilities);
+        System.out.println(utilities);
+        for(Node node: this.tree.root.children){
+            System.out.println(node.utility);
+        }
         
-        return utilities.indexOf(bestUtility) + 1;
+        return utilities.indexOf(max) + 1;
     }
     
     /**

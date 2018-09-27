@@ -17,12 +17,30 @@ public class Node {
     public ArrayList<Node> children;
     
     public int utility;
-
+    public Node parent;
     public int depth;
     public String mode;
+    public int alpha;
+    public int beta;
     
     public Node() {
         this.children = new ArrayList<Node>();
         this.utility = Integer.MIN_VALUE;
+        this.alpha = Integer.MIN_VALUE;
+        this.beta = Integer.MAX_VALUE;
+//        this.parent = new Node;
+    }
+    
+    public Node clone() {
+        Node newNode = new Node();
+        newNode.utility = this.utility;
+        newNode.depth = this.depth;
+        newNode.mode = this.mode;
+        
+        for (Node node : this.children) {
+            newNode.children.add(this.clone());
+        }
+        
+        return newNode;
     }
 }

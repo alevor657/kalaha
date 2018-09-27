@@ -5,10 +5,13 @@ import java.io.*;
 import java.net.*;
 import javax.swing.*;
 import java.awt.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Stack;
 import kalaha.*;
+
 
 /**
  * This is the main class for your Kalaha AI bot. Currently
@@ -216,31 +219,100 @@ public class AIClient implements Runnable
      * @param GameState state of the game
      * @param int current depth level
      */
-    public void constructTree(Node root, GameState board, int depth){
+    public void idfs(Node root, GameState board){
+        int count=1;
+        Instant starts = Instant.now();
+        long timer = 0;
+        Node newNode = root.clone();
         
+        while(timer<5){
+            Instant ends = Instant.now();
+            timer = Duration.between(starts, ends).getSeconds();
+            this.tree.root = newNode;
+            newNode = constructTreeEfficient(newNode, board, 0, count, starts);
+//            newNode = updatedRoot.clone();
+            
+            count++;
+        }
+    }
+    public Node constructTreeEfficient(Node root, GameState board, int depth, int threshold,Instant starts){
+        int localDepth = 0;
         boolean isOurTurn = this.player == board.getNextPlayer();
-
+        
         for (int k=1; k<=6; k++){
-            GameState newBoard = board.clone();
-            if (!newBoard.moveIsPossible(k)) {
-                continue;
-            };
-            newBoard.makeMove(k);
+            if(root.alpha<root.beta){
+                GameState newBoard = board.clone();
+                if (!newBoard.moveIsPossible(k)) {
+                    continue;
+                };
+                newBoard.makeMove(k);
 
-            Node newNode = new Node();
-            newNode.mode = isOurTurn ? "max" : "min";
+                Node newNode = new Node();
+                newNode.mode = isOurTurn ? "max" : "min";
+                newNode.parent = root;
+                newNode.alpha = root.alpha;
+                newNode.beta = root.beta;
 
-            if (depth == 6) {
                 int opponent = this.player == 1 ? 2 : 1;
                 newNode.utility = newBoard.getScore(this.player) - newBoard.getScore(opponent);
-            }
-            
-            root.children.add(newNode);
-            
-            if (depth < 6) {
-                constructTree(newNode, newBoard.clone(), depth + 1);
+                
+                root.children.add(newNode);
+                Instant ends = Instant.now();
+                long timer = Duration.between(starts, ends).getSeconds();
+                if (depth < threshold && (timer<5)) {
+
+                    constructTreeEfficient(newNode, newBoard.clone(), depth+1, threshold, starts);
+                    if (root.mode == "max") {
+                        
+                        
+                        if(root.alpha<newNode.utility){
+
+                            root.alpha = newNode.utility;
+                        }
+                    } else if (root.mode == "min") {
+                        
+                        if(root.beta>newNode.utility){
+                            root.beta = newNode.utility;
+                            
+                        }
+                    }
+                }else{
+                    System.out.println(depth);
+                }
+            }else{
+                System.out.println("Pruned");
+                break;
             }
         }
+        
+        if(root.children.isEmpty()){
+            System.out.println("I am a leaf");
+        }else{
+            ArrayList utils = new ArrayList();
+            for (Node node : root.children) {
+                utils.add(node.utility);
+            }
+
+            if (root.mode == "max") {
+                int max = (int)Collections.max(utils);
+                root.utility = max;
+//                if(root.alpha<max){
+//                    
+//                    root.alpha = max;
+//                }
+            } else if (root.mode == "min") {
+                int min = (int)Collections.min(utils);
+                root.utility = min;
+//                 System.out.println("3");
+//                root.beta=root children utility
+//                if(root.beta>min){
+//                    root.beta = min;
+//                     System.out.println("4");
+//                }
+            }
+        }
+        
+        return root;
     }
     
     /**
@@ -248,45 +320,45 @@ public class AIClient implements Runnable
      * 
      * @param Node root node.
      */
-    public void calculateUtility(Node root)
-    {
-        if (!root.children.isEmpty()) {
-            // Go down the tree
-            for (Node node : root.children) {
-                calculateUtility(node);
-            }
-            
-            // Find the penultimate layer (second last)
-            if (this.allContainUtility(root.children)) {
-                ArrayList utils = new ArrayList();
-                
-                for (Node node : root.children) {
-                    utils.add(node.utility);
-                }
-                
-                                
-                if (root.mode == "max") {
-                    root.utility = (int)Collections.max(utils);
-                } else if (root.mode == "min") {
-                    root.utility = (int)Collections.min(utils);
-                }
-            }
-        }
-    }
+//    public void calculateUtility(Node root)
+//    {
+//        if (!root.children.isEmpty()) {
+//            // Go down the tree
+//            for (Node node : root.children) {
+//                calculateUtility(node);
+//            }
+//            
+//            // Find the penultimate layer (second last)
+//            if (this.allContainUtility(root.children)) {
+//                ArrayList utils = new ArrayList();
+//                
+//                for (Node node : root.children) {
+//                    utils.add(node.utility);
+//                }
+//                
+//                                
+//                if (root.mode == "max") {
+//                    root.utility = (int)Collections.max(utils);
+//                } else if (root.mode == "min") {
+//                    root.utility = (int)Collections.min(utils);
+//                }
+//            }
+//        }
+//    }
     
     /**
      * Checks that all nodes are leafs
      */
-    public boolean allContainUtility(ArrayList<Node> nodes) {
-        boolean res = true;
-        for (Node node : nodes) {
-            if (node.utility == Integer.MIN_VALUE) {
-                res = false;
-            }
-        }
-        
-        return res;
-    }
+//    public boolean allContainUtility(ArrayList<Node> nodes) {
+//        boolean res = true;
+//        for (Node node : nodes) {
+//            if (node.utility == Integer.MIN_VALUE) {
+//                res = false;
+//            }
+//        }
+//        
+//        return res;
+//    }
     
     /**
      * Returns the best possible move.
@@ -305,7 +377,7 @@ public class AIClient implements Runnable
             if(board.getSeeds(i, this.player) == 0){
                 utilities.add(Integer.MIN_VALUE);
             } else {
-                utilities.add(this.tree.root.children.get(count).utility + 1);
+                utilities.add(this.tree.root.children.get(count).utility );
                 count++;
             }
         }
@@ -329,13 +401,16 @@ public class AIClient implements Runnable
         this.tree= new Tree();
         Node root = new Node();
         root.mode = "max";
+//        root.alpha = Integer.MIN_VALUE;
+//        root.beta = Integer.MAX_VALUE;
         tree.root = root;
         
         GameState newBoard = currentBoard.clone();
-        constructTree(tree.root, newBoard, 0);
-        calculateUtility(tree.root);
+//        constructTreeEfficient(tree.root, newBoard, 0);
+//        calculateUtility(tree.root);
+        idfs(tree.root, newBoard);
         int theMove = this.getBestMove(currentBoard);
-        System.out.println("Making move " + theMove);
+//        System.out.println("Making move " + theMove);
         
         return theMove;
     }

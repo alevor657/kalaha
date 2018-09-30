@@ -211,16 +211,11 @@ public class AIClient implements Runnable
     }
     
     /**
-     * Construct a tree for the game by using provided Node class.
-     * Game tree is built by playing the game.
-     * Adds utility values to the leaf nodes based on the difference between scores.
-     * 
-     * @param Node root node for the tree
-     * @param GameState state of the game
-     * @param int current depth level
+     * ************************************************************************
      */
-    public void idfs(Node root, GameState board){
-        int count=1;
+    
+    public void ids(Node root, GameState board){
+        int count = 1;
         Instant starts = Instant.now();
         long timer = 0;
         Node newNode = root.clone();
@@ -229,27 +224,30 @@ public class AIClient implements Runnable
             Instant ends = Instant.now();
             timer = Duration.between(starts, ends).getSeconds();
             this.tree.root = newNode;
-            newNode = constructTreeEfficient(newNode, board, 0, count, starts);
-//            newNode = updatedRoot.clone();
-            
+            newNode = constructTreeEfficient(newNode, board, 0, count, starts);            
             count++;
         }
     }
-    public Node constructTreeEfficient(Node root, GameState board, int depth, int threshold,Instant starts){
-        int localDepth = 0;
+    
+    
+    public Node constructTreeEfficient(Node root, GameState board, int depth, int threshold, Instant starts){
         boolean isOurTurn = this.player == board.getNextPlayer();
         
-        for (int k=1; k<=6; k++){
-            if(root.alpha<root.beta){
+        for (int k=1; k <= 6; k++) {
+            if (root.alpha < root.beta) {
+                
                 GameState newBoard = board.clone();
+                
+                // if move possible
                 if (!newBoard.moveIsPossible(k)) {
                     continue;
                 };
+                
                 newBoard.makeMove(k);
 
+                // create node and assign it as a child to root
                 Node newNode = new Node();
                 newNode.mode = isOurTurn ? "max" : "min";
-                newNode.parent = root;
                 newNode.alpha = root.alpha;
                 newNode.beta = root.beta;
 
@@ -259,35 +257,48 @@ public class AIClient implements Runnable
                 root.children.add(newNode);
                 Instant ends = Instant.now();
                 long timer = Duration.between(starts, ends).getSeconds();
-                if (depth < threshold && (timer<5)) {
-
+                
+                // if timer run out or treshhold is reached
+                if (depth < threshold && (timer < 5)) {
+                    
+                    // recurse with the new node
                     constructTreeEfficient(newNode, newBoard.clone(), depth+1, threshold, starts);
-                    if (root.mode == "max") {
-                        
-                        
-                        if(root.alpha<newNode.utility){
-
-                            root.alpha = newNode.utility;
+                    
+                    // add AB values to new node
+                    if ("max".equals(newNode.mode)) {
+                        if(newNode.alpha < newNode.utility) {
+                            newNode.alpha = newNode.utility;
                         }
-                    } else if (root.mode == "min") {
-                        
-                        if(root.beta>newNode.utility){
-                            root.beta = newNode.utility;
-                            
+                    } else if ("min".equals(newNode.mode)) {
+                        if(newNode.beta > newNode.utility) {
+                            newNode.beta = newNode.utility;
                         }
                     }
-                }else{
+                    
+                    // propagate ab to root node
+                    if ("max".equals(root.mode)) {
+                        if(root.alpha < newNode.utility) {
+                            root.alpha = newNode.utility;
+                        }
+                    } else if ("min".equals(root.mode)) {
+                        if(root.beta > newNode.utility) {
+                            root.beta = newNode.utility;
+                        }
+                    }
+                } else {
                     System.out.println(depth);
                 }
-            }else{
+            } else {
                 System.out.println("Pruned");
                 break;
             }
         }
         
-        if(root.children.isEmpty()){
+        //if we are at leaf
+        if (root.children.isEmpty()) {
             System.out.println("I am a leaf");
-        }else{
+        } else {
+            // propagate util to the parent
             ArrayList utils = new ArrayList();
             for (Node node : root.children) {
                 utils.add(node.utility);
@@ -296,69 +307,16 @@ public class AIClient implements Runnable
             if (root.mode == "max") {
                 int max = (int)Collections.max(utils);
                 root.utility = max;
-//                if(root.alpha<max){
-//                    
-//                    root.alpha = max;
-//                }
             } else if (root.mode == "min") {
                 int min = (int)Collections.min(utils);
                 root.utility = min;
-//                 System.out.println("3");
-//                root.beta=root children utility
-//                if(root.beta>min){
-//                    root.beta = min;
-//                     System.out.println("4");
-//                }
             }
         }
         
         return root;
     }
     
-    /**
-     * Propagates utility values up to the top nodes.
-     * 
-     * @param Node root node.
-     */
-//    public void calculateUtility(Node root)
-//    {
-//        if (!root.children.isEmpty()) {
-//            // Go down the tree
-//            for (Node node : root.children) {
-//                calculateUtility(node);
-//            }
-//            
-//            // Find the penultimate layer (second last)
-//            if (this.allContainUtility(root.children)) {
-//                ArrayList utils = new ArrayList();
-//                
-//                for (Node node : root.children) {
-//                    utils.add(node.utility);
-//                }
-//                
-//                                
-//                if (root.mode == "max") {
-//                    root.utility = (int)Collections.max(utils);
-//                } else if (root.mode == "min") {
-//                    root.utility = (int)Collections.min(utils);
-//                }
-//            }
-//        }
-//    }
-    
-    /**
-     * Checks that all nodes are leafs
-     */
-//    public boolean allContainUtility(ArrayList<Node> nodes) {
-//        boolean res = true;
-//        for (Node node : nodes) {
-//            if (node.utility == Integer.MIN_VALUE) {
-//                res = false;
-//            }
-//        }
-//        
-//        return res;
-//    }
+
     
     /**
      * Returns the best possible move.
@@ -401,16 +359,15 @@ public class AIClient implements Runnable
         this.tree= new Tree();
         Node root = new Node();
         root.mode = "max";
-//        root.alpha = Integer.MIN_VALUE;
-//        root.beta = Integer.MAX_VALUE;
-        tree.root = root;
+        this.tree.root = root;
         
+//        if (fileExists) {
+//            
+//        }
+//        
         GameState newBoard = currentBoard.clone();
-//        constructTreeEfficient(tree.root, newBoard, 0);
-//        calculateUtility(tree.root);
-        idfs(tree.root, newBoard);
+        ids(this.tree.root, newBoard);
         int theMove = this.getBestMove(currentBoard);
-//        System.out.println("Making move " + theMove);
         
         return theMove;
     }

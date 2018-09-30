@@ -17,7 +17,6 @@ public class Node {
     public ArrayList<Node> children;
     
     public int utility;
-    public Node parent;
     public int depth;
     public String mode;
     public int alpha;
@@ -28,7 +27,6 @@ public class Node {
         this.utility = Integer.MIN_VALUE;
         this.alpha = Integer.MIN_VALUE;
         this.beta = Integer.MAX_VALUE;
-//        this.parent = new Node;
     }
     
     public Node clone() {

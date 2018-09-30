@@ -11,6 +11,6 @@ import java.util.ArrayList;
  *
  * @author user
  */
-public class Tree {
+public class Tree implements java.io.Serializable {
     public Node root;
 }

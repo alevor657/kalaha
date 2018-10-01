@@ -214,51 +214,85 @@ public class AIClient implements Runnable
      * ************************************************************************
      */
     
+    /**
+     * This is a runner for recursive constructTreeEfficient() function.
+     * It sets up a timer and manages objects to be passed to the 
+     * constructTreeEfficient() function. It uses iterative deepening to make 
+     * algorithm more effective.
+     * 
+     * @param root root node
+     * @param board current GameState
+     */
     public void ids(Node root, GameState board){
+        // Set up depth treshold
         int count = 1;
+        // Start up a timer
         Instant starts = Instant.now();
         long timer = 0;
+        // Make a copy of passed node
         Node newNode = root.clone();
         
-        while(timer<5){
+        while (timer < 5) {
+            // Time passed
             Instant ends = Instant.now();
+            // Update the timer
             timer = Duration.between(starts, ends).getSeconds();
+            // Copy new tree to current working tree
             this.tree.root = newNode;
-            newNode = constructTreeEfficient(newNode, board, 0, count, starts);            
+            // Get a new tree with set depth treshold
+            newNode = constructTreeEfficient(newNode, board, 0, count, starts);           
+            // Increment depth level
             count++;
         }
     }
     
-    
-    public Node constructTreeEfficient(Node root, GameState board, int depth, int threshold, Instant starts){
+    /**
+     * Recursive function that builds the tree using depth first approach and 
+     * propagates utilities up the tree. 
+     * It also uses alpha-beta pruning.
+     * 
+     * @param root root node
+     * @param board current game board
+     * @param depth current depth of the tree
+     * @param threshold maximal tree depth 
+     * @param starts timer
+     * @return tree
+     */
+    public Node constructTreeEfficient(Node root, GameState board, int depth, int threshold, Instant starts) {
+        // Check if the turn is ours
         boolean isOurTurn = this.player == board.getNextPlayer();
         
+        // Try build 6 children for current root node
         for (int k=1; k <= 6; k++) {
+            // Prune if possible
             if (root.alpha < root.beta) {
-                
+                // Clone current GameState
                 GameState newBoard = board.clone();
                 
-                // if move possible
+                // If move is not impossible, skip this branch
                 if (!newBoard.moveIsPossible(k)) {
                     continue;
                 };
                 
+                // make a move
                 newBoard.makeMove(k);
 
-                // create node and assign it as a child to root
+                // create node and assign it as a child to current root
                 Node newNode = new Node();
                 newNode.mode = isOurTurn ? "max" : "min";
                 newNode.alpha = root.alpha;
                 newNode.beta = root.beta;
-
                 int opponent = this.player == 1 ? 2 : 1;
                 newNode.utility = newBoard.getScore(this.player) - newBoard.getScore(opponent);
                 
+                // Add created child to current root node
                 root.children.add(newNode);
+                
+                // See if the timer har run out
                 Instant ends = Instant.now();
                 long timer = Duration.between(starts, ends).getSeconds();
                 
-                // if timer run out or treshhold is reached
+                // If timer has not run out and treshhold is not reached
                 if (depth < threshold && (timer < 5)) {
                     
                     // recurse with the new node
@@ -289,6 +323,7 @@ public class AIClient implements Runnable
                     System.out.println(depth);
                 }
             } else {
+                // Prune branch
                 System.out.println("Pruned");
                 break;
             }
@@ -304,10 +339,10 @@ public class AIClient implements Runnable
                 utils.add(node.utility);
             }
 
-            if (root.mode == "max") {
+            if ("max".equals(root.mode)) {
                 int max = (int)Collections.max(utils);
                 root.utility = max;
-            } else if (root.mode == "min") {
+            } else if ("min".equals(root.mode)) {
                 int min = (int)Collections.min(utils);
                 root.utility = min;
             }
@@ -319,10 +354,10 @@ public class AIClient implements Runnable
 
     
     /**
-     * Returns the best possible move.
+     * Returns the first index of an ambo with highest utility. 
      * 
-     * @param board current board
-     * @return int ambo id 1-6
+     * @param board Current board
+     * @return index of selected ambo
      */
     public int getBestMove(GameState board)
     {
@@ -335,7 +370,7 @@ public class AIClient implements Runnable
             if(board.getSeeds(i, this.player) == 0){
                 utilities.add(Integer.MIN_VALUE);
             } else {
-                utilities.add(this.tree.root.children.get(count).utility );
+                utilities.add(this.tree.root.children.get(count).utility);
                 count++;
             }
         }
@@ -361,10 +396,6 @@ public class AIClient implements Runnable
         root.mode = "max";
         this.tree.root = root;
         
-//        if (fileExists) {
-//            
-//        }
-//        
         GameState newBoard = currentBoard.clone();
         ids(this.tree.root, newBoard);
         int theMove = this.getBestMove(currentBoard);
